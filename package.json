@@ -1,0 +1,15 @@
+{
+  "name": "repeatable-promise",
+  "version": "0.1.0",
+  "description": "repeatable promise that can be used trigger and handle events",
+  "main": "index.js",
+  "keywords": [],
+  "author": {
+    "name": "CAB",
+    "email": "github@charles-andre.com"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC"
+}
