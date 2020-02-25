@@ -43,7 +43,7 @@ repeatPromise.thenAgain(
 	(x) => {
 		console.log(x)
 		if (x >= 10) {
-			repeatPromise.terminate()
+			repeatPromise.resolve(100)
 			clearInterval(timer)
 		}
 	})
