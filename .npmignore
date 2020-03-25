@@ -1,7 +1,0 @@
-*.njsproj.*
-*.sln
-.vs/ 
-.git/
-bin/
-obj/
-*.gitignore
