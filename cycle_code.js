@@ -78,6 +78,7 @@ const incycle = () => {
     return promise;
 }
 
+
 function cycle() {
 
     var promise = incycle();
@@ -96,6 +97,8 @@ function cycle() {
     }
 
 }
+
+
 
 
 module.exports = {

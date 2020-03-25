@@ -1,18 +1,22 @@
 {
   "name": "repeatable-promise",
-  "version": "0.1.0",
+  "version": "1.0.9",
   "description": "repeatable promise that can be used trigger and handle events",
-  "main": "index.js",
-  "keywords": [],
-  "author": {
-    "name": "CAB",
-    "email": "github@charles-andre.com"
-  },
+  "main": "cycle_code.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \\\\\\\"Error: no test specified\\\\\\\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CABrouwers/repeatable-promise.git"
+  },
+  "author": "CABrouwers",
   "license": "ISC",
-  "homepage": "https://github.com/CABrouwers/repeatable-promise"
+  "bugs": {
+    "url": "https://github.com/CABrouwers/repeatable-promise/issues"
+  },
+  "homepage": "https://github.com/CABrouwers/repeatable-promise#readme",
+  "dependencies": {}
 }
 
 
