@@ -10,10 +10,9 @@ Events can be both generated and handled in multiple places in the code.
 
 # Usage
 
-## Create the promise:  promiseLike = cycle()
+## Create the promise:  promiseLike = new cycle()
 
 Returns the promise-like object. There is no parameter or option. 
-Do not use the  ``new`` keyword, this is not a contructor.
 The promise-like object can be passed around the program to enable both triggering and responding from multiple parts of the code
 
 ## Activate the event: promiseLike .repeat(val)
@@ -26,7 +25,8 @@ Everytime the ``promiseLike.repeat(val)`` is executed, the function  ``fn`` rece
 
 ## Terminate the promise: promiseLike .terminate()
 
-This terminates the promise-like. Even if ``promiseLike.repeat(val)`` is executed, the ``.thenAgain(fn)``  part won't be activated. 
+This terminates the promise-like. The current value will be received by all copies of the cycle and all .thenAgain will be excuted one last time.
+However is even if ``promiseLike.repeat(val)`` is executed, the ``.thenAgain(fn)``  part won't be activated. 
 
 # Example
 
@@ -34,16 +34,23 @@ In this example a counter value is send to two receivers. One of the receiver di
   
   ## Code
 ```
+
+rp = require("repeatable-promise")
+
+
 var n = 0
-var repeatPromise = new cycle()
+var timer
+var repeatPromise = new rp.cycle()
 
 //this is the receiving side, everytime **repeatPromise**  is activated, the function (x)=>... is executed
 
 repeatPromise.thenAgain(
 	(x) => {
-		console.log(x)
+		console.log("a",x)
 		if (x >= 10) {
-			repeatPromise.resolve(100)
+			//The current treat of the last value is executed after which the promise the promise-liek is disabled
+			repeatPromise.terminate(100)
+			//This stops the time but even the call to repeat continued, their would be ignored.
 			clearInterval(timer)
 		}
 	})
@@ -55,7 +62,7 @@ repeatPromise.thenAgain((x) => {console.log("b",x*x)})
   
 //this is the sending side, {repeatPromise.repeat(n++) sends the value n to the all receiving code.
  
-var timer = setInterval(() => {repeatPromise.repeat(n++)}, 1000)
+timer = setInterval(() => {repeatPromise.repeat(n++)}, 1000)
 ```
 
   ## Output
@@ -93,7 +100,5 @@ https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-
 defer()  generates a Promise that can be resolve from outside its body by calling resolve() on it.  
 
 The defer() function is exposed in the module and is available for use.
-
-
 
 
