@@ -78,26 +78,26 @@ const incycle = () => {
     return promise;
 }
 
+const cycle = () => {
 
-function cycle() {
+    var handle = new Object();
 
     var promise = incycle();
 
-    this.repeat = (pl) => {
+    handle.repeat = (pl) => {
         promise = promise.repeat(pl)
-        return this
+        return handle
     }
 
-    this.thenAgain = (f) => {
+    handle.thenAgain = (f) => {
         return promise.thenAgain(f)
     }
 
-    this.terminate = (pl) => {
-        return promise.resolve(pl)
+    handle.resolve = (pl) => {
+        return promise.resolve(pl);
     }
-
+    return handle;
 }
-
 
 
 
