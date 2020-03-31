@@ -1,8 +1,8 @@
 # repeatable-promise
 
-This module provides two Promise-like objects that can used to communicate asynchronously between different parts of the code. The syntax is based on that of Promises and these objects are very simple to use. 
+This module provides two Promise-like objects that can be used to communicate asynchronously between different parts of a program. The syntax is based on that of Promises and these objects are very simple to use. 
 
-``Defer`` is a Promise that can be resolved remotely, e.g.  outside of its body. It can be used for one time events.
+``Defer`` is a Promise that can be resolved remotely, e.g. outside of its body. It can be used for one time events.
 ``Cycle`` is very similar to a Promise but can be retriggered multiple times, also remotely.
 
 # Defer
@@ -11,9 +11,12 @@ This module provides two Promise-like objects that can used to communicate async
 
 The syntax is simple and similar to that of a Promise
 The constructor has not argument:  ```new Defer()```
+
 The key methods are :
+
 ```then(f)``` to define code to be executed asynchronously.
-```resolve(v)``` to trigger execution of the code with a certain value.
+
+```resolve(v)``` to pass a value and trigger execution of the code.
 
 ### Example 1
 
@@ -37,8 +40,10 @@ df
 ```
 
 The Defer object can also handle the failure case with the following functions
+
 ```catch(f)``` to define code to be executed asynchronously upon failure
-```reject(v)``` to trigger failure and passes a value
+
+```reject(v)``` to passe a value and trigger the failure code.
 
 ### Example 2
 ```
@@ -56,12 +61,15 @@ failed 99
 
 ## Usage
 
-The syntax is simple and micks that of a Promise
-The constructor has not argument:  ```new Cycle()```
+The syntax is simple and mimicks that of a Promise
+
+The constructor has no argument:  ```new Cycle()```
 
 The key methods are :
+
 ```thenAgain(f)``` to define code to be executed asynchronously.
-```repeat(v)``` to trigger execution of the code with a certain value.
+
+```repeat(v)``` to trigger to pass a value and execution of the code .
 
 
 ### Example 3
@@ -83,9 +91,10 @@ received 103
 ## Termination
 ### resolve()
 
-The ```thenAgain(func)``` method returns a Defer/Promise object. This object can be resolved by calling ```resolve(val)``` method. This resolution of this Defer/Promise stop all further triggering by the repeat function. Other instances of the ```thenAgain(func)```  will continue to be triggered. 
+The ```thenAgain(func)``` method returns a Defer/Promise object. This object can be resolved by calling the ```resolve(val)``` method. This resolution of the Defer/Promise stops all further triggering by the repeat function. 
+Other instances of the ```thenAgain(func)```  will continue to be triggered. 
 
-note: 
+Note: 
 The ```terminate(val)``` method can also be used on the Defer object, it is equivalent (synonymous) to ```resolve(val)```
 
 ### Example 4
@@ -99,7 +108,7 @@ setTimeout(
   cy.repeat(2)
   },100)
 ```
-The timer is needed to ensure that the excution of ```cy.repeat(1)``` is fully executed before ```df.resolve(99)``` is executed. It is not necessary the case without the timer because cy.repeat(1)  is executed in a asynchronous manner. 
+The timer is needed to ensure that ```cy.repeat(1)``` is fully executed before ```df.resolve(99)``` is executed. It is not necessary the case without the timer because ```cy.repeat(1)``` is executed in asynchronously (see example 7 for behaviour without the timer). 
 
 #### Output
 ```
@@ -110,7 +119,7 @@ the Defer is resolved with value 99
 
 ### terminate(val)
 
-The Cycle object has also ```terminate(val)``` method. This method disables all Cycle and all future calls to ```repeat(v)``` will be ignored.  Also, all Defer objects created by the ```thenAgain(func)```  will be resolved with the value passed to terminate.
+The Cycle object has also a ```terminate(val)``` method. This method disables the Cycle and all future calls to ```repeat(v)``` will be ignored.  Also, all Defer objects created with the ```thenAgain(func)```  will be resolved with the value passed to terminate.
 
 
 ### Example 5
@@ -122,7 +131,7 @@ cy.repeat(1)
 cy.terminate(99)							// the Cycle is terminated
 cy.repeat(2)
 ```
-A timer is not necessary as in example 4 because calls to  ```cy.repeat(val)``` and ```cy.terminate(val)``` are queued and in always executed asynchronoulsy but in the orders they are made (see example 7 for behaviour without the timer)
+A timer is not necessary as in example 4 because calls to  ```cy.repeat(val)``` and ```cy.terminate(val)``` are queued and are always executed asynchronoulsy but in the orders they were made.
 #### Output
 ```
 received 1
@@ -167,8 +176,8 @@ timer = setInterval(()=>{cy.repeat(n)
 
 ## Timing of execution
 
-Calls to methods on a Cycle object can occurs from multiple places in the code and are executed asychronously.
-The only guarantee is that the execution of all ```cy.repeat(val)``` and ```cy.terminate(val)``` calls are queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values received from ```cy.repeat(val)``` are treated. 
+Calls to methods on a Cycle object can occurs in where in the code where this Cycle object is available.
+The only guarantee is that the execution of all ```cy.repeat(val)``` and ```cy.terminate(val)``` calls wil be queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values  from ```cy.repeat(val)``` are treated. 
 
 ### Example 7
 ```
