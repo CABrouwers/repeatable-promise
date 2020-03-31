@@ -1,5 +1,5 @@
 
-const defer = () => {
+function Defer() {
     var res, rej;
 
     var promise = new Promise((resolve, reject) => {
@@ -7,102 +7,93 @@ const defer = () => {
         rej = reject;
     });
 
-    promise.resolve = res;
-    promise.reject = rej;
-
-    return promise;
+    this.resolve = res;
+    this.reject = rej;
+    this.then = (f) => { return promise.then(f) };
+    this.catch = (f) => { return promise.catch(f) };
 }
 
 
 
-const incycle = () => {
+const inCycle = () => {
 
-
-    var promise = defer();
+    var promise = new Defer();
 
     promise.repeat = (pl) => {
-        promise.successor = incycle();
+        promise.successor = inCycle();
+        promise.successor.gen = pl
         promise.resolve(pl)
         return promise.successor
     }
 
+    promise.terminate = (val) => {
+        promise.resolve(val)
+    }
 
 
-    promise.reset = (pl, f, obj, st) => {
-
-        if (promise.successor == null) {
-            obj.lastwill()
-            return null;
-        }
-
-        if (obj.killswitch) {
-            if (st) { obj.lastwill(pl) }
-            else { obj.lastwill() }
-            return null;
-        }
-        if (st) { f(pl) };
-
+    promise.reset = (pl, f, tracker, repo) => {
+        if (repo.kill) { return }
+        f(pl)
         promise.successor
             .then((pl) => {
-                promise.successor.reset(pl, f, obj, true);
-            })
-            .catch((pl) => {
-                promise.successor.reset(pl, f, obj, false);
+                if (promise.successor.successor != undefined) {
+                    promise.successor.reset(pl, f, tracker, repo)
+                }
+                else { tracker.resolve(pl) }
             })
     }
 
-    promise.thenAgain = (f, g = null) => {
+    promise.thenAgain = (f) => {
 
-        let obj = defer();
-        obj.killswitch = false
-        obj.then(() => { obj.killswitch = true })
-        obj.lastwill = () => { };
-        obj.finalize = (g) => { obj.lastwill = g }
+        let tracker = new Defer();
+        let repo = {}
+
+        tracker
+            .then(() => { repo.kill = true })
 
         promise
             .then((pl) => {
-                promise.reset(pl, f, obj, true);
-            })
-            .catch((pl) => {
-                promise.reset(pl, f, obj, false);
+                promise.reset(pl, f, tracker, repo);
             })
 
-
-
-
-        return obj
+        return tracker
     }
-
-
 
     return promise;
 }
 
-const cycle = () => {
 
-    var handle = new Object();
+function Cycle() {
 
-    var promise = incycle();
+    var queue = Promise.resolve()
 
-    handle.repeat = (pl) => {
-        promise = promise.repeat(pl)
-        return handle
+    var promise = inCycle();
+
+    this.repeat = (pl) => {
+        queue = queue.then(() => {
+            promise = promise.repeat(pl)
+        })
+        return this
     }
 
-    handle.thenAgain = (f) => {
+    this.thenAgain = (f) => {
         return promise.thenAgain(f)
     }
 
-    handle.resolve = (pl) => {
-        return promise.resolve(pl);
+    this.terminate = (val) => {
+        queue = queue.then(() => {
+            return promise.terminate(val)
+        })
     }
-    return handle;
+
 }
 
 
 
+
+
 module.exports = {
-    defer,
-    cycle,
+    Defer,
+    Cycle,
 }
 

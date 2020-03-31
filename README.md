@@ -1,104 +1,193 @@
 # repeatable-promise
 
-Allows to create **Promise-like** objects that can be retriggered multiple times.
+This module provides two Promise-like objects that can used to communicate asynchronously between different parts of the code. The syntax is based on that of Promises and these objects are very simple to use. 
 
-These objects can be used to handle asynchronous events/communication between parts of a program or between nodes
+``Defer`` is a Promise that can be resolved remotely, e.g.  outside of its body. It can be used for one time events.
+``Cycle`` is very similar to a Promise but can be retriggered multiple times, also remotely.
 
-The syntax mimicks that of Promises and is very easy to use. 
+# Defer
 
-Events can be both generated and handled in multiple places in the code.
+## Usage
 
-# Usage
+The syntax is simple and similar to that of a Promise
+The constructor has not argument:  ```new Defer()```
+The key methods are :
+```then(f)``` to define code to be executed asynchronously.
+```resolve(v)``` to trigger execution of the code with a certain value.
 
-## Create the promise:  promiseLike = new cycle()
+### Example 1
 
-Returns the promise-like object. There is no parameter or option. 
-The promise-like object can be passed around the program to enable both triggering and responding from multiple parts of the code
-
-## Activate the event: promiseLike .repeat(val)
-
-This trigger the event with the value ``val``
-
-## Handle the event: promiseLike .thenAgain(fn)
-
-Everytime the ``promiseLike.repeat(val)`` is executed, the function  ``fn`` receives the value ``val`` and is executed.
-
-## Terminate the promise: promiseLike .terminate()
-
-This terminates the promise-like. The current value will be received by all copies of the cycle and all .thenAgain will be excuted one last time.
-However is even if ``promiseLike.repeat(val)`` is executed, the ``.thenAgain(fn)``  part won't be activated. 
-
-# Example
-
-In this example a counter value is send to two receivers. One of the receiver disables the event when the counter reaches 10.
-  
-  ## Code
+```
+df = new Defer() 
+df.then((val)=>{console.debug("received",val)}
+df.resolve(45)
+```
+#### Ouput
+```
+received 45
 ```
 
-rp = require("repeatable-promise")
+## Details
+
+then() returns a Promise and thus can bet chained with regular Promises
+```
+df
+  .then((val)=>{console.debug("received",val)}
+  .then(()=>{console.debug("something else")}
+```
+
+The Defer object can also handle the failure case with the following functions
+```catch(f)``` to define code to be executed asynchronously upon failure
+```reject(v)``` to trigger failure and passes a value
+
+### Example 2
+```
+df = new Defer()   
+df.catch((val)=>{console.debug("failed",val)}
+df.reject(99)
+```
+#### Output
+```
+failed 99
+```
+
+# Cycle
 
 
-var n = 0
+## Usage
+
+The syntax is simple and micks that of a Promise
+The constructor has not argument:  ```new Cycle()```
+
+The key methods are :
+```thenAgain(f)``` to define code to be executed asynchronously.
+```repeat(v)``` to trigger execution of the code with a certain value.
+
+
+### Example 3
+
+```
+cy = new Cycle() 
+cy.thenAgain((val)=>{console.debug("received",val)}
+cy.repeat(101)
+cy.repeat(102)
+cy.repeat(103)
+```
+#### Ouput
+```
+received 101
+received 102
+received 103
+```
+
+## Termination
+### resolve()
+
+The ```thenAgain(func)``` method returns a Defer/Promise object. This object can be resolved by calling ```resolve(val)``` method. This resolution of this Defer/Promise stop all further triggering by the repeat function. Other instances of the ```thenAgain(func)```  will continue to be triggered. 
+
+note: 
+The ```terminate(val)``` method can also be used on the Defer object, it is equivalent (synonymous) to ```resolve(val)```
+
+### Example 4
+```
+cy = new Cycle() 
+df = cy.thenAgain((val)=>{console.debug("received",val)}) 		// df is a Defer object.
+df.then((val)=>{console.debug("the Defer is resolved with value",val)}) // to be excuted after resolution
+cy.repeat(1)
+setTimeout(
+  ()=>{df.resolve(99) 								// the Defer is resolved
+  cy.repeat(2)
+  },100)
+```
+The timer is needed to ensure that the excution of ```cy.repeat(1)``` is fully executed before ```df.resolve(99)``` is executed. It is not necessary the case without the timer because cy.repeat(1)  is executed in a asynchronous manner. 
+
+#### Output
+```
+received 1
+the Defer is resolved with value 99
+```
+
+
+### terminate(val)
+
+The Cycle object has also ```terminate(val)``` method. This method disables all Cycle and all future calls to ```repeat(v)``` will be ignored.  Also, all Defer objects created by the ```thenAgain(func)```  will be resolved with the value passed to terminate.
+
+
+### Example 5
+```
+cy = new Cycle() 
+df = cy.thenAgain((val)=>{console.debug("received",val)}) 		// df is a Defer object.
+df.then((val)=>{console.debug("the Defer is resolved with value",val)}) // to be excuted after resolution
+cy.repeat(1)
+cy.terminate(99)							// the Cycle is terminated
+cy.repeat(2)
+```
+A timer is not necessary as in example 4 because calls to  ```cy.repeat(val)``` and ```cy.terminate(val)``` are queued and in always executed asynchronoulsy but in the orders they are made (see example 7 for behaviour without the timer)
+#### Output
+```
+received 1
+the Defer is resolved with value 99
+```
+
+
+### Example 6 (complex)
+
+```
 var timer
-var repeatPromise = new rp.cycle()
+cy =  new Cycle()
+df1 = cy.thenAgain((val)=>{console.debug("1 received",val)})
+df1.then((val)=>{console.debug("1 is terminated with value",val)})
+df2 = cy.thenAgain((val)=>{console.debug("2 received",val)})
+df2.then((val)=>{console.debug("2 is terminated with value",val)})
+df3 = cy.thenAgain((val)=>{if(val>=3) {df1.resolve(100)}})
+df4 = cy.thenAgain((val)=>{if(val>=5) {
+  cy.terminate(999)
+  clearInterval(timer)
+  }})
 
-//this is the receiving side, everytime **repeatPromise**  is activated, the function (x)=>... is executed
-
-repeatPromise.thenAgain(
-	(x) => {
-		console.log("a",x)
-		if (x >= 10) {
-			//The current treat of the last value is executed after which the promise the promise-liek is disabled
-			repeatPromise.terminate(100)
-			//This stops the time but even the call to repeat continued, their would be ignored.
-			clearInterval(timer)
-		}
-	})
-
-//this another receiver
-
-repeatPromise.thenAgain((x) => {console.log("b",x*x)})
-
-  
-//this is the sending side, {repeatPromise.repeat(n++) sends the value n to the all receiving code.
- 
-timer = setInterval(() => {repeatPromise.repeat(n++)}, 1000)
+n = 1
+timer = setInterval(()=>{cy.repeat(n)
+			n = n +1
+			}
+			,100)
+```
+#### Ouput
+```
+1 received 1
+2 received 1
+1 received 2
+2 received 2
+1 received 3
+2 received 3
+1 is terminated with value 100
+2 received 4
+2 received 5
+2 is terminated with value 999
 ```
 
-  ## Output
+## Timing of execution
+
+Calls to methods on a Cycle object can occurs from multiple places in the code and are executed asychronously.
+The only guarantee is that the execution of all ```cy.repeat(val)``` and ```cy.terminate(val)``` calls are queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values received from ```cy.repeat(val)``` are treated. 
+
+### Example 7
 ```
-a 0
-b 0
-a 1
-b 1
-a 2
-b 4
-a 3
-b 9
-a 4
-b 16
-a 5
-b 25
-a 6
-b 36
-a 7
-b 49
-a 8
-b 64
-a 9
-b 81
-a 10
-b 100
+cy = new Cycle() 
+df = cy.thenAgain((val)=>{console.debug("received",val)}) 		// df is a Defer object.
+df.then((val)=>{console.debug("the Defer is resolved with value",val)}) // to be excuted after resolution
+cy.repeat(1)
+df.resolve(99) 								// the Defer is resolved
+cy.repeat(2)
 ```
+#### Output
+```
+the Defer is resolved with value 99
+```
+Because ```cy.repeat(1)``` is queued and executed asynchronously, ```df ``` is resolved before the value ```1``` is treated and the value is ignored.
 
 # Acknowledgement
 
-This code uses the defer() function proposed by **Carter** in this post:
+This code uses the Defer() function proposed by **Carter** in this post:
 
 https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-function-scope
-
-defer()  generates a Promise that can be resolve from outside its body by calling resolve() on it.  
-
-The defer() function is exposed in the module and is available for use.
-
 
