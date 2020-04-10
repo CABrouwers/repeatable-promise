@@ -8,6 +8,7 @@ function Defer() {
     });
 
     this.resolve = res;
+    this.terminate = res;
     this.reject = rej;
     this.then = (f) => { return promise.then(f) };
     this.catch = (f) => { return promise.catch(f) };

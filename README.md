@@ -18,6 +18,8 @@ The key methods are :
 
 ```resolve(v)``` to pass a value and trigger execution of the code.
 
+note:```terminate(v)``` can also be used is a synonym of ```resolve(v)```  
+
 ### Example 1
 
 ```
