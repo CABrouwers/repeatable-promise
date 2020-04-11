@@ -86,6 +86,10 @@ function Cycle() {
         return promise.catch(f)
     }
 
+    this.reject = (v) => {
+        return promise.reject(v)
+    }
+
     this.terminate = (val) => {
         queue = queue.then(() => {
             return promise.terminate(val)
