@@ -35,6 +35,7 @@ const inCycle = () => {
     promise.reset = (pl, f, tracker, repo) => {
         if (repo.kill) { return }
         f(pl)
+        promise.successor.catch = promise.catch
         promise.successor
             .then((pl) => {
                 if (promise.successor.successor != undefined) {
@@ -79,6 +80,10 @@ function Cycle() {
 
     this.thenAgain = (f) => {
         return promise.thenAgain(f)
+    }
+
+    this.catch = (f) => {
+        return promise.catch(f)
     }
 
     this.terminate = (val) => {

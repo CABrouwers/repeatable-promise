@@ -1,6 +1,6 @@
 {
   "name": "repeatable-promise",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "repeatable promise that can be used trigger and handle events",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,3 @@
   "homepage": "https://github.com/CABrouwers/repeatable-promise#readme",
   "dependencies": {}
 }
-
-
