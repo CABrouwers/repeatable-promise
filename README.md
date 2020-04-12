@@ -5,7 +5,7 @@ This module provides two Promise-like objects that can be used to communicate as
 ``Defer`` is a Promise that can be resolved remotely, e.g. outside of its body. It can be used for one time events.
 ``Cycle`` is very similar to a Promise but can be retriggered multiple times, also remotely.
 
-Technically, the Defer object wraps a Promise object and exposes its ```Resolve(v)``` and ```Reject(v)``` methods outside of its body.  The Cycle object wraps a series of Defer objects that a renewed with each retriggering.
+Technically, the Defer object wraps a Promise object and exposes its ```Resolve(v)``` and ```Reject(v)``` methods outside of its body.  The Cycle object wraps a series of Defer objects that are renewed with each retriggering.
 Several methods of these two objects expose the underlying Promise object allowing the use of the Promise then-catch construct on them or to chain them with other promise objects.
 
 # Defer
@@ -112,7 +112,7 @@ setTimeout(
   cy.repeat(2)
   },100)
 ```
-The timer is needed to ensure that ```cy.repeat(1)``` is fully executed before ```df.resolve(99)``` is executed. It is not necessary the case without the timer because ```cy.repeat(1)``` is executed in asynchronously (see example 7 for behaviour without the timer). 
+The timer is needed to ensure that ```cy.repeat(1)``` is fully executed before ```df.resolve(99)``` is executed. It is not necessary the case without the timer because ```cy.repeat(1)``` is executed asynchronously (see example 7 for behaviour without the timer). 
 
 #### Output
 ```
@@ -180,8 +180,8 @@ timer = setInterval(()=>{cy.repeat(n)
 
 ## Timing of execution
 
-Calls to methods on a Cycle object can occurs in where in the code where this Cycle object is available.
-The only guarantee is that the execution of all ```cy.repeat(val)```, ```cy.terminate(val)``` and```cy.fail(val)``` calls wil be queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values  from ```cy.repeat(val)``` are treated. 
+Calls to methods on a Cycle object can occurs asynchronously anywhere in the code where this Cycle object is available.
+The only guarantee is that the execution of all ```cy.repeat(val)```, ```cy.terminate(val)``` and```cy.fail(val)``` calls will be queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values  from ```cy.repeat(val)``` are treated. 
 
 ### Example 7
 ```
@@ -201,7 +201,7 @@ Because ```cy.repeat(1)``` is queued and executed asynchronously, ```df ``` is r
 ## Failure
 ### fail(val)
 
-The ```fail(val)``` method  of a Cycle object triggers the failure of all Defer objects derived from it with with ```thenAgain(f)```. Since these Defer objects are Promises, the failure can be caught with ``catch(f)```.
+The ```fail(val)``` method of a Cycle object triggers the failure of all Defer objects derived from it with with ```thenAgain(f)```. Since these Defer objects are Promises, the failure can be caught with ``catch(f)```.
 A call to ```fail(val)``` also  disables the Cycle and all future calls to ```repeat(v)``` will be ignored.  
 
 ### Example 8
@@ -232,7 +232,7 @@ catch2 21   //due to the asynchronous nature of the objects the order of output 
 
 # Acknowledgement
 
-This code uses the Defer() function proposed by **Carter** in this post:
+This code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
 
 https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-function-scope
 
