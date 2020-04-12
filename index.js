@@ -11,7 +11,6 @@ function Defer() {
     this.terminate = res;
     this.reject = rej;
     this.then = (f) => { return promise.then(f) };
-    this.catch = (f) => { return promise.catch(f) };
 }
 
 
@@ -32,10 +31,15 @@ const inCycle = () => {
     }
 
 
+    promise.fail = (val) => {
+        promise.reject(val)
+    }
+
+
     promise.reset = (pl, f, tracker, repo) => {
         if (repo.kill) { return }
         f(pl)
-        promise.successor.catch = promise.catch
+        
         promise.successor
             .then((pl) => {
                 if (promise.successor.successor != undefined) {
@@ -43,6 +47,7 @@ const inCycle = () => {
                 }
                 else { tracker.resolve(pl) }
             })
+            .catch((pl) => { tracker.reject(pl) })
     }
 
     promise.thenAgain = (f) => {
@@ -52,12 +57,13 @@ const inCycle = () => {
 
         tracker
             .then(() => { repo.kill = true })
+            .catch(() => {})
 
         promise
             .then((pl) => {
                 promise.reset(pl, f, tracker, repo);
             })
-
+            .catch((pl) => { tracker.reject(pl) })
         return tracker
     }
 
@@ -82,12 +88,10 @@ function Cycle() {
         return promise.thenAgain(f)
     }
 
-    this.catch = (f) => {
-        return promise.catch(f)
-    }
-
-    this.reject = (v) => {
-        return promise.reject(v)
+    this.fail = (v) => {
+        queue = queue.then(() => {
+            return promise.fail(v)
+        })
     }
 
     this.terminate = (val) => {
