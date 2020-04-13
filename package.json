@@ -1,6 +1,6 @@
 {
   "name": "repeatable-promise",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "repeatable promise that can be used trigger and handle events",
   "main": "index.js",
   "scripts": {

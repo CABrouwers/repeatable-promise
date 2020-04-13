@@ -44,7 +44,7 @@ df
   .then(()=>{console.debug("something else")}
 ```
 
-Since ```then(f)``` returns a promise, the ```catch(f)``` construct can also be used to handle errors.
+Since ```then(f)``` returns a promise, the ```catch(f)``` and ```finally(f)``constructs can also be used to handle errors.
 
 The error case can be triggered  with ```reject(v)``` applied to the Defer object
 
@@ -53,11 +53,13 @@ The error case can be triggered  with ```reject(v)``` applied to the Defer objec
 df = new Defer()   
 df.then((val)=>{console.debug("received",val)}
   .catch((val)=>{console.debug("failed",val)}
+  .finally(()=>{console.debug("finally",)}
 df.reject(99)
 ```
 #### Output
 ```
 failed 99
+finally
 ```
 
 # Cycle
