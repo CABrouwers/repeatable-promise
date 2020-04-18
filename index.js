@@ -81,7 +81,7 @@ function Cycle() {
         queue = queue.then(() => {
             promise = promise.repeat(pl)
         })
-        return this
+        return queue
     }
 
     this.thenAgain = (f) => {
@@ -90,14 +90,16 @@ function Cycle() {
 
     this.fail = (v) => {
         queue = queue.then(() => {
-            return promise.fail(v)
+             promise.fail(v)
         })
+        return queue
     }
 
     this.terminate = (val) => {
         queue = queue.then(() => {
-            return promise.terminate(val)
+             promise.terminate(val)
         })
+        return queue
     }
 
 }
