@@ -2,15 +2,32 @@
 function Defer() {
     var res, rej;
 
-    var promise = new Promise((resolve, reject) => {
+    prom = new Promise((resolve, reject) => {
         res = resolve;
         rej = reject;
     });
 
-    this.resolve = res;
-    this.terminate = res;
-    this.reject = rej;
-    this.then = (f) => { return promise.then(f) };
+    prom.resolve = res;
+    prom.terminate = res;
+    prom.reject = rej;
+    prom.fail = rej;
+    return prom
+}
+
+
+function Delay(d = 0, val) {
+    var df = new Defer()
+    var tm = setTimeout(() => { df.resolve(val) }, d)
+    df.then(() => { clearTimeout(tm) })
+    return df
+}
+
+function Queue(val) {
+    var theQueue = Promise.resolve(val)
+    this.enQueue = (f) => {
+        theQueue = theQueue.then(f)
+        return theQueue
+    }
 }
 
 
@@ -75,35 +92,38 @@ function Cycle() {
 
     var queue = Promise.resolve()
 
-    var promise = inCycle();
+    var cycler = inCycle();
 
-    this.repeat = (pl) => {
+    var prom = new Defer()
+
+    prom.repeat = (pl) => {
         queue = queue.then(() => {
-            promise = promise.repeat(pl)
+            cycler = cycler.repeat(pl)
         })
         return queue
     }
 
-    this.thenAgain = (f) => {
-        return promise.thenAgain(f)
+    prom.thenAgain = (f) => {
+        return cycler.thenAgain(f)
     }
 
-    this.fail = (v) => {
-        queue = queue.then(() => {
-             promise.fail(v)
-        })
-        return queue
-    }
 
-    this.terminate = (val) => {
-        queue = queue.then(() => {
-             promise.terminate(val)
-        })
-        return queue
-    }
+    prom.then(
+        (val) => {
+            queue = queue.then(() => {
+                cycler.terminate(val)
+            })
+        },
+        (v) => {
+            queue = queue.then(() => {
+                cycler.fail(v)
+            })
+        }
+    )
+
+    return prom
 
 }
-
 
 
 
@@ -111,5 +131,7 @@ function Cycle() {
 module.exports = {
     Defer,
     Cycle,
+    Delay,
+    Queue
 }
 
