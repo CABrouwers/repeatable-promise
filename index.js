@@ -121,6 +121,23 @@ function Cycle() {
         }
     )
 
+    prom.terminate = (pl) => {
+        queue = queue.then(() => {
+            cycler.terminate(pl)
+            prom.resolve(pl)
+        })
+        return queue
+    }
+
+    prom.fail = (pl) => {
+        queue = queue.then(() => {
+            cycler.fail(pl)
+            prom.fail(pl)
+        })
+        return queue
+    }
+
+
     return prom
 
 }
