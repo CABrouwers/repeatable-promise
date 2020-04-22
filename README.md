@@ -1,7 +1,7 @@
 
 # repeatable-promise
 
-This module provides four Promise objects that extend the promises. The most important ones are **Defer**  and **Cycle**, they are designed for asynchronous communicate between different parts of a program. These objects are very simple to use once one is a little familiar with Promises.
+This module provides four Promise objects that extend the regular Promises. The most important ones are **Defer**  and **Cycle**, they are designed for asynchronous communication between different parts of a program. These objects are very simple to use if one is a little familiar with Promises.
 
 ``Defer`` is a Promise that can be resolved remotely, e.g. outside of its body. It can be used for one time events.
 ``Cycle`` is  a Promise-like object that can be retriggered multiple times and remotely.
