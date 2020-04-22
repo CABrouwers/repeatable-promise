@@ -16,7 +16,9 @@
     "events",
     "defer",
     "repeatable",
-    "call-back"
+    "call-back",
+    "queue",
+    "timer"
   ],
   "author": "CABrouwers",
   "license": "ISC",

@@ -402,7 +402,7 @@ A Cycle is promise that is resolved or failed upon termination. Then/catch/final
 
 # 5. Acknowledgement
 
-This code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
+The code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
 
 https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-function-scope
 
