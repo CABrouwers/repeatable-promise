@@ -281,12 +281,13 @@ catch2 21   //due to the asynchronous nature of the objects the order of output 
 
 # 4. Queue
 
-**Queue** is a very simple object that can be used to queue the execution of functions. It just a wrapper for an extensible chains of  ```promise.then(f) ```
+**Queue** is a very simple object that can be used to queue the execution of functions or Promises. It just a wrapper for an extensible chains of  ```promise.then(f) ```
 
 Its constructor takes one optional parameter and it has only one method ```enQueue(f)```
 
 **f** is the following function execution to be added to the queue. If **f** returns a Promise, the queue will wait for the promise to be resolved.  ```enQueue(f)``` returns a promise that is resolved when **f**  is completed (even if more functions have been added to the queue later.
 
+A Promise can all be used as **f**  parameter, in such a case the function ```()=>{return f}``` is entered in the queue and the execution will wait on the repromise to be resolved of failed.
 Since the function calls are chained through the ```promise.then(f) ``` mechanism, the result of one execution is passed to the next call as a parameter.  The optional parameter of the constructor is the first value in the chain.
 
 ### Example (basic) 10

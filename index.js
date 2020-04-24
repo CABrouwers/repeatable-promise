@@ -24,8 +24,14 @@ function Delay(d = 0, val) {
 
 function Queue(val) {
     var theQueue = Promise.resolve(val)
+
     this.enQueue = (f) => {
-        theQueue = theQueue.then(f)
+        if (f instanceof Promise) {
+            theQueue = theQueue.then(() => { return f })
+        }
+        else {
+            theQueue = theQueue.then(f)
+        }     
         return theQueue
     }
 }
