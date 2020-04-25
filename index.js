@@ -33,11 +33,11 @@ function Queue(val) {
 
     this.enQueue = (f) => {
         if (f instanceof Promise) {
-            theQueue = theQueue.then(() => { return f },() => { })
+            theQueue = theQueue.then(() => { return f }, () => { return f })
         }
         else {
-            theQueue = theQueue.then(f).catch(() => { })
-        }     
+            theQueue = theQueue.then(f).catch(f)
+        }
         return theQueue
     }
 }
