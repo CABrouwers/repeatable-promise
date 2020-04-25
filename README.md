@@ -83,13 +83,15 @@ finally
 # 2. Delay
 
 **Delay** is just a Promise that resolves itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor us different as it accepts two parameter: the delay in milliseconds and an optional value passed at resolution.
-
+The method ```reset(time,value)``` allows to reinitiliaze a running timer.
 
 ### Example 3
 
 ```
 var rp = require("repeatable-promise")
-var dl = new  rp.Delay(1000,222)
+var dl = new  rp.Delay(10000,111)
+
+dl.reset(1000,223)  //changes and restarts the timer while is it running
 
 dl.then((val)=>{console.debug("received",val)})
   .catch((val)=>{console.debug("failed",val)})

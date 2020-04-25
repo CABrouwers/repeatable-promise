@@ -17,9 +17,15 @@ function Defer() {
 
 function Delay(d = 0, val) {
     var df = new Defer()
-    var tm = setTimeout(() => { df.resolve(val) }, d)
-    df.then(() => { clearTimeout(tm) })
+    var tm 
+    df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) } )
+    df.reset = (d = 0, val) =>{
+        clearTimeout(tm)
+        tm = setTimeout(() => { df.resolve(val) }, d)
+    }
+    df.reset(d,val)
     return df
+
 }
 
 function Queue(val) {
