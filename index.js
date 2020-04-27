@@ -28,6 +28,21 @@ function Delay(d = 0, val) {
 
 }
 
+
+function TimeOut(d = 0, val) {
+    var df = new rp.Defer()
+    var tm
+    df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) })
+    df.reset = (d = 0, val) => {
+        clearTimeout(tm)
+        tm = setTimeout(() => { df.fail(val) }, d)
+    }
+    df.reset(d, val)
+    return df
+
+}
+
+
 function Queue(val) {
     var theQueue = Promise.resolve(val)
 
@@ -36,7 +51,7 @@ function Queue(val) {
             theQueue = theQueue.then(() => { return f }, () => { return f })
         }
         else {
-            theQueue = theQueue.then(f).catch(f)
+            theQueue = theQueue.then(f,f)
         }
         return theQueue
     }
@@ -161,6 +176,7 @@ module.exports = {
     Defer,
     Cycle,
     Delay,
+    TimeOut,
     Queue
 }
 

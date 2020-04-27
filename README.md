@@ -1,14 +1,14 @@
-
 # repeatable-promise
 
-This module provides four Promise objects that extend the regular Promises. The most important ones are **Defer**  and **Cycle**, they are designed for asynchronous communication between different parts of a program. These objects are very simple to use if one is a little familiar with Promises.
+This module includes Promise based objects that provide ways to simplify asynchronous communication between different parts of a program and event triggering/handling.  At the core of these objects is  **Defer**,  a promise that can be resolved or failed from outside its body and can be used as a "remote switch".  **Cycle** is built on **Defer**, it is a  "retriggerable **Promise**".  These objects are very simple to use if one is a little familiar with **Promises** and leverage the clean call-back syntax of **Promises**.  The objects can easily be chained with regular **Promise**s, they are **Promise**s in their own right and most of their methods return **Promise**s. 
 
 ``Defer`` is a Promise that can be resolved remotely, e.g. outside of its body. It can be used for one time events.
 ``Cycle`` is  a Promise-like object that can be retriggered multiple times and remotely.
 ``Delay`` is a **Defer** that resolves itself after a set time.
+``TimeOut`` is a **Defer** that fails after a set time.
 ``Queue`` is an object that queues/chains function calls or promise resolution 
 
-Technically, the **Defer** object is a **Promise** that exposes its ```Resolve(v)``` and ```Reject(v)``` methods outside of its body.  The Cycle object wraps a series of **Defer** objects that are renewed with each retriggering. **Delay** is just a **Defer** with a timer.  And **Queue** is just  a wrapper around an extensible chain of ```Promise.then(...)``` calls.
+Technically, the **Defer** object is a **Promise** that exposes its ```Resolve(v)``` and ```Reject(v)``` methods outside of its body.  The Cycle object wraps a series of **Defer** objects that are renewed with each retriggering. **Delay** and **TimeOut** are just a **Defer** with a timer.  And **Queue** is just  a wrapper around an extensible chain of ```Promise.then(...)``` calls.
 
 Several methods of these two objects expose the underlying Promise object allowing the use of the Promise then-catch construct on them or to chain them with other promise objects.
 ## Contents
@@ -16,7 +16,7 @@ Several methods of these two objects expose the underlying Promise object allowi
 2. Delay
 3. Cycle
 4. Queue
-5. Reference -> go here for syntax details
+5. Reference -> go here for details
 6. Acknowlegment
 
 
@@ -82,16 +82,14 @@ finally
 
 # 2. Delay
 
-**Delay** is just a Promise that resolves itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor us different as it accepts two parameter: the delay in milliseconds and an optional value passed at resolution.
-The method ```reset(time,value)``` allows to reinitiliaze a running timer.
+**Delay** is a Promise that resolves itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor accepts two parameters: the delay in milliseconds and an optional value passed at resolution.
+
 
 ### Example 3
 
 ```
 var rp = require("repeatable-promise")
-var dl = new  rp.Delay(10000,111)
-
-dl.reset(1000,223)  //changes and restarts the timer while is it running
+var dl = new  rp.Delay(1000,222)
 
 dl.then((val)=>{console.debug("received",val)})
   .catch((val)=>{console.debug("failed",val)})
@@ -103,7 +101,30 @@ dl.then((val)=>{console.debug("received",val)})
 received 222
 finally
 ```
-# 3. Cycle
+
+
+# 3. TimeOut
+
+**TimeOut**  is a Promise that fails itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor accepts two parameters: the delay in milliseconds and an optional value passed at failure.
+
+
+### Example 4
+
+```
+var rp = require("repeatable-promise")
+var dl = new  rp.TimeOut(1000,222)
+
+dl.then((val)=>{console.debug("received",val)})
+  .catch((val)=>{console.debug("failed",val)})
+  .finally(()=>{console.debug("finally",)})
+```
+
+#### Output
+```
+failed 222
+finally
+```
+# 4. Cycle
 
 
 ## Usage
@@ -119,7 +140,7 @@ The key methods are :
 ```repeat(v)``` to trigger to pass a value and execution of the code .
 
 
-### Example 4
+### Example 5
 
 ```
 var rp = require("repeatable-promise")
@@ -141,7 +162,7 @@ received 103
 
 The ```thenAgain(func)``` method returns a Defer/Promise object. This object can be resolved by calling the either```terminate(val)```  or ```resolve(val)```  methods (the methods are synonymous). This resolution of the Defer/Promise stops all further triggering by the repeat function.  Other instances of the ```thenAgain(func)```  will continue to be triggered. 
 
-### Example 5
+### Example 6
 ```
 var rp = require("repeatable-promise")
 var cy = new rp.Cycle() 
@@ -170,7 +191,7 @@ Please note that a **Cycle** object is really a **Promise** (exactly a **Defer**
 
 It is recommend to terminate every Cycle that is created to avoid memory leaks; otherwise all the listening thenAgain will remain in memory. Only the Cycle needs to be terminated. 
 
-### Example 6
+### Example 7
 ```
 var rp = require("repeatable-promise")
 var cy = new rp.Cycle()
@@ -181,7 +202,7 @@ cy.repeat(1)
 cy.terminate(99) // the Cycle is terminated
 cy.repeat(2)
 ```
-A timer is not necessary as in example 5 because calls to  ```cy.repeat(val)``` and ```cy.terminate(val)``` are queued and are always executed asynchronoulsy but in the orders they were made.  
+A timer is not necessary as in example 6 because calls to  ```cy.repeat(val)``` and ```cy.terminate(val)``` are queued and are always executed asynchronoulsy but in the orders they were made.  
 
 #### Output
 ```
@@ -191,7 +212,7 @@ the Defer is resolved with value 99
 ```
 
 
-### Example 7 (complex)
+### Example 8 (complex)
 
 ```
 var rp = require("repeatable-promise")
@@ -232,7 +253,7 @@ timer = setInterval(()=>{cy.repeat(n)
 Calls to methods on a Cycle object can occurs asynchronously anywhere in the code where this Cycle object is available.
 The only guarantee is that the execution of all ```cy.repeat(val)```, ```cy.terminate(val)``` and```cy.fail(val)``` calls will be queued and executed successively in the order they were made. A call to ```df.resolve(val)``` (where ```df = cy.thenAgain(f)```) is not queued and  ```cy.thenAgain(f)``` can be resolved/disabled before all pending values  from ```cy.repeat(val)``` are treated. 
 
-### Example 8
+### Example 9
 ```
 var rp = require("repeatable-promise")
 var cy = new rp.Cycle() 
@@ -254,7 +275,7 @@ Because ```cy.repeat(1)``` is queued and executed asynchronously, ```df ``` is r
 The ```fail(val)``` method of a Cycle object triggers the failure of all Defer objects derived from it with with ```thenAgain(f)```. Since these Defer objects are Promises, the failure can be caught with ``catch(f)```.
 A call to ```fail(val)``` also  disables the Cycle and all future calls to ```repeat(v)``` will be ignored.  
 
-### Example 9
+### Example 10
 ```
 var rp = require("repeatable-promise")
 var cy1 = new rp.Cycle()
@@ -281,20 +302,17 @@ then1 11
 catch2 21   //due to the asynchronous nature of the objects the order of output can vary
 ```
 
-# 4. Queue
+# 5. Queue
 
-**Queue** is a very simple object that can be used to queue the execution of functions or Promises. It just a wrapper for an extensible chains of  ```promise.then(f) ```
+**Queue** is a very simple object that can be used to queue the execution of functions. It just a wrapper for an extensible chains of  ```promise.then(f) ```
 
 Its constructor takes one optional parameter and it has only one method ```enQueue(f)```
 
-**f** is the following function execution to be added to the queue. If **f** returns a Promise, the queue will wait for the promise to be resolved.  ```enQueue(f)``` returns a promise that is resolved when **f**  is completed (even if more functions are added to the queue later).
+**f** is the following function execution to be added to the queue. If **f** returns a Promise, the queue will wait for the promise to be resolved.  ```enQueue(f)``` returns a promise that is resolved when **f**  is completed (even if more functions have been added to the queue later.
 
-A Promise can all be used as **f**  parameter, in such a case the function ```()=>{return f}``` is entered in the queue and the execution will wait on the repromise to be resolved of failed.
 Since the function calls are chained through the ```promise.then(f) ``` mechanism, the result of one execution is passed to the next call as a parameter.  The optional parameter of the constructor is the first value in the chain.
 
-Queue never fails, any error is caught and discarded. 
-
-### Example (basic) 10
+### Example (basic) 11
 
 ```
 var rp = require("repeatable-promise")
@@ -312,7 +330,7 @@ Mi
 ```
 
 
-### Example  (complex) 11
+### Example  (complex) 12
 
 The following example shows how ```enQueue()``` accepts a function that returns a promise and also returns a promise. It also demonstrates the passing of a value in the chain. 
 ```
@@ -337,7 +355,7 @@ Re 3
 Mi 5
 ```
 
-# 5. Reference
+# 6. Reference
 
 ## Defer
 
@@ -405,9 +423,8 @@ A Cycle is promise that is resolved or failed upon termination. Then/catch/final
 ```finally(f)```|Promise
 
 
-# 5. Acknowledgement
+# 7. Acknowledgement
 
-The code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
+This code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
 
 https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-function-scope
-
