@@ -136,6 +136,10 @@ function Cycle() {
         return cycler.thenAgain(f)
     }
 
+    prom.thenOnce = (f) => {
+        return cycler.thenOnce(f)
+    }
+
 
     prom.then(
         (val) => {
