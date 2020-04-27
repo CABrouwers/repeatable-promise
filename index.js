@@ -111,6 +111,8 @@ const inCycle = () => {
         return tracker
     }
 
+    promise.thenOnce = (f) => { return promise.then(f) }
+
     return promise;
 }
 
