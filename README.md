@@ -396,6 +396,7 @@ A **Delay** is a **Promise** that resolves automatically after a set time.
 | ------------- |-----|----
 ```new Cycle()```|Cycle|Creates a repeatable promise
 ```thenAgain(f)```|Defer|Executes function **f** every time the Cycle is retriggered
+```thenOnce(f)```|Defer|Executes function **f** one time, the next time the Cycle is retriggered
 ```repeat(v)``` |Promise|Passes the value **v** to all listening ```thenAgain(f)``` 
 ```terminate(v)```|Promise| Terminates the Cycle and all listeners (```thenAgain(f)``` ) with the value **v**
 ```fail(v)```|Promise| Fails the Cycle and all listeners (```thenAgain(f)``` ) with the value **v**
@@ -425,6 +426,7 @@ A Cycle is promise that is resolved or failed upon termination. Then/catch/final
 
 # 7. Acknowledgement
 
-This code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
+The code of the Defer object is based on the Defer() function proposed by **Carter** in this post:
 
 https://stackoverflow.com/questions/26150232/resolve-javascript-promise-outside-function-scope
+
