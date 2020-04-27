@@ -30,7 +30,7 @@ function Delay(d = 0, val) {
 
 
 function TimeOut(d = 0, val) {
-    var df = new rp.Defer()
+    var df = new Defer()
     var tm
     df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) })
     df.reset = (d = 0, val) => {
