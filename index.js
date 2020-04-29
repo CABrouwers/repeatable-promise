@@ -15,13 +15,13 @@ function Defer() {
 }
 
 
-function Delay(d = 0, val) {
+function Delay(d, val) {
     var df = new Defer()
     var tm 
     df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) } )
     df.reset = (d = 0, val) =>{
         clearTimeout(tm)
-        tm = setTimeout(() => { df.resolve(val) }, d)
+        if (d != undefined) { tm = setTimeout(() => { df.resolve(val) }, d)}      
     }
     df.reset(d,val)
     return df
@@ -29,13 +29,13 @@ function Delay(d = 0, val) {
 }
 
 
-function TimeOut(d = 0, val) {
+function TimeOut(d, val) {
     var df = new Defer()
     var tm
     df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) })
     df.reset = (d = 0, val) => {
         clearTimeout(tm)
-        tm = setTimeout(() => { df.fail(val) }, d)
+        if (d != undefined) { tm = setTimeout(() => { df.fail(val) }, d) }
     }
     df.reset(d, val)
     return df

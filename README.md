@@ -14,10 +14,11 @@ Several methods of these two objects expose the underlying Promise object allowi
 ## Contents
 1. Defer
 2. Delay
-3. Cycle
-4. Queue
-5. Reference -> go here for details
-6. Acknowlegment
+3. TimeOut
+4. Cycle
+5. Queue
+6. Reference -> go here for details
+7. Acknowlegment
 
 
 # 1. Defer
@@ -83,7 +84,7 @@ finally
 # 2. Delay
 
 **Delay** is a Promise that resolves itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor accepts two parameters: the delay in milliseconds and an optional value passed at resolution.
-
+If no value is not provided for the time delay or a **null** or **undefined** value is provided, the **Delay** behaves like a normal **Defer** and doesn't resolve by itself.
 
 ### Example 3
 
@@ -106,7 +107,7 @@ finally
 # 3. TimeOut
 
 **TimeOut**  is a Promise that fails itself after a delay. It is based on **Defer** and exposes the same methods as **Defer**.   The construtor accepts two parameters: the delay in milliseconds and an optional value passed at failure.
-
+If no value is not provided for the time delay or a **null** or **undefined** value is provided,  the **TimeOut** behaves like a normal **Defer** and doesn't fail by itself.
 
 ### Example 4
 
