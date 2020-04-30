@@ -19,9 +19,9 @@ function Delay(d, val) {
     var df = new Defer()
     var tm 
     df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) } )
-    df.reset = (d = 0, val) =>{
+    df.reset = (d, val) =>{
         clearTimeout(tm)
-        if (d != undefined) { tm = setTimeout(() => { df.resolve(val) }, d)}      
+        if (d || d==0) { tm = setTimeout(() => { df.resolve(val) }, d)}      
     }
     df.reset(d,val)
     return df
@@ -33,9 +33,9 @@ function TimeOut(d, val) {
     var df = new Defer()
     var tm
     df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) })
-    df.reset = (d = 0, val) => {
+    df.reset = (d, val) => {
         clearTimeout(tm)
-        if (d != undefined) { tm = setTimeout(() => { df.fail(val) }, d) }
+        if (d || d == 0) { tm = setTimeout(() => { df.fail(val) }, d) }
     }
     df.reset(d, val)
     return df
