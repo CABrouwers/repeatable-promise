@@ -48,13 +48,14 @@ function Queue(val) {
 
     this.enQueue = (f) => {
         if (f instanceof Promise) {
-            theQueue = theQueue.then(() => { return f }).catch( () => { return f })
+            theQueue = theQueue.then(() => { return f }).catch(() => { })
         }
         else {
-            theQueue = theQueue.then(f).catch(f)
+            theQueue = theQueue.then(f).catch(() => { })
         }
         return theQueue
     }
+
 }
 
 
