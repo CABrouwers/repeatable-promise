@@ -306,13 +306,17 @@ catch2 21   //due to the asynchronous nature of the objects the order of output 
 
 # 5. Queue
 
-**Queue** is a very simple object that can be used to queue the execution of functions. It just a wrapper for an extensible chains of  ```promise.then(f) ```
+**Queue** is a very simple object that can be used to queue the execution of functions or promises. It is just a wrapper for an extensible chains of  ```promise.then(f) ```
 
-Its constructor takes one optional parameter and it has only one method ```enQueue(f)```
+Its constructor takes no parameter and it has only one method ```enQueue(f)``` 
 
-**f** is the following function execution to be added to the queue. If **f** returns a Promise, the queue will wait for the promise to be resolved.  ```enQueue(f)``` returns a promise that is resolved when **f**  is completed (even if more functions have been added to the queue later.
+```enQueue(f)``` adds **f** to the FIFO execution queue . If **f** returns a **Promise** or **f**  is a **Promise** , the queue will wait for the promise to be resolved or rejected. 
 
-Since the function calls are chained through the ```promise.then(f) ``` mechanism, the result of one execution is passed to the next call as a parameter.  The optional parameter of the constructor is the first value in the chain.
+ ```enQueue(f)``` returns a **Promise** that is resolved or rejected when **f**  completes.    If **f**  is a function, the **Promise**  resolves to the value returned by  **f**  or is rejected with the error code thrown by  **f** .  
+
+ If  **f**  is a **Promise**,  the **Promise**  returned by  ```enQueue(f)```  is resolved or  rejected when  **f**  is resolved or rejected  and with the same value.  
+
+The execution of the Queue continues normally even if one steps fails. 
 
 ### Example (basic) 11
 
@@ -334,27 +338,33 @@ Mi
 
 ### Example  (complex) 12
 
-The following example shows how ```enQueue()``` accepts a function that returns a promise and also returns a promise. It also demonstrates the passing of a value in the chain. 
-```
-var rp = require("repeatable-promise")
-var qe = new rp.Queue(1)
+The following example shows how ```enQueue()``` accepts a function that returns a promise and also returns a promise. 
 
-qe.enQueue((v)=>{console.debug("Do",v) ;return v+1})
-qe.enQueue((v)=>{return  new  rp.Delay(1000,v+1)}).then((v)=>{console.debug("zing",v)})
-qe.enQueue((v)=>{console.debug("Re",v) ;return v+1})
-qe.enQueue((v)=>{return  rp.Delay(1000,v+1)})
-qe.enQueue((v)=>{console.debug("Mi",v) ;return v+1})
 
 ```
+var qe = new rp.Queue()
 
-`()=>{return new rp.Delay(1000)}` returns a promise
-```qe.enQueue(()=>{return new rp.Delay(1000)})``` also returns a promise
+a = qe.enQueue(new rp.Delay(1000,1))
+b = qe.enQueue(()=>{return  new rp.TimeOut(1000,2)})
+c = qe.enQueue(()=>{return  3})
+
+a.then((x) => {console.log("success a",x)}).catch((x) => {console.log("failure a",x)})
+b.then((x) => {console.log("success b",x)}).catch((x) => {console.log("failure b",x)})
+c.then((x) => {console.log("success c",x)}).catch((x) => {console.log("failure c",x)})
+
+```
+
+`new rp.Delay(1000,1)`is a **Promise** that resolves to value **1** after one second. 
+```()=>{return  new rp.TimeOut(1000,2)}```  is a function that returns a  **Promise** that rejects with value **2** 
+after one second. 
+`()=>{return  3}`is a plain function that  that return value **3** when executed
 #### Output
 ```
-Do 1
-zing 3
-Re 3
-Mi 5
+[... one second wait ...]
+success a 1   
+[... one second wait ...]
+failure b 2
+success c 3
 ```
 
 # 6. Reference

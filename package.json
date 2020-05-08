@@ -1,7 +1,7 @@
 {
   "name": "repeatable-promise",
-  "version": "1.8.7",
-  "description": "A family of Promise objects that can be resolved/failed remotely and/or multiple times",
+  "version": "1.9.0",
+  "description": "A family of Promise based objects that can be resolved/failed remotely and/or multiple times",
   "main": "index.js",
   "scripts": {
     "test": "echo \\\\\\\"Error: no test specified\\\\\\\" && exit 1"

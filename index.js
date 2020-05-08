@@ -43,11 +43,12 @@ function TimeOut(d, val) {
 }
 
 
-function Queue(val) {
-    var theQueue = Promise.resolve(val)
+function Queue() {
+    var theQueue = Promise.resolve()
 
     this.enQueue = (f) => {
         var df = new Defer()
+        df.catch(() => { })
         if (f instanceof Promise) {
             theQueue = theQueue.then(() => { return f }).then(df.resolve, df.fail)
         }
