@@ -37,7 +37,6 @@ The key methods are :
 note:```terminate(v)``` can also be used and is a synonym of ```resolve(v)```  
 
 
-It is recommend to terminate every **Defer** that is created to avoid memory leaks; otherwise all holding then code will remain in memory. 
 
 ### Example 1
 
@@ -63,7 +62,9 @@ df
 
 Since ```then(f)``` returns a promise, the ```catch(f)``` and ```finally(f)``constructs can also be used to handle errors.
 
-The error case can be triggered  with ```reject(v)``` applied to the Defer object
+The error case can be triggered  with ```reject(v)``` or its synonym ```fail(v)``` applied to the **Defer** object.
+
+Please note that any **Defer** that is rejected needs a ```catch(f)``` clause otherwise a unhandled promise rejection error will be generatedé
 
 ### Example 2
 ```

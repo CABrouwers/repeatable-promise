@@ -47,17 +47,17 @@ function Queue(val) {
     var theQueue = Promise.resolve(val)
 
     this.enQueue = (f) => {
+        var df = new rp.Defer()
         if (f instanceof Promise) {
-            theQueue = theQueue.then(() => { return f }).catch(() => { })
+            theQueue = theQueue.then(() => { return f }).then(df.resolve, df.fail)
         }
         else {
-            theQueue = theQueue.then(f).catch(() => { })
+            theQueue = theQueue.then(f).then(df.resolve, df.fail)
         }
-        return theQueue
+        return df
     }
 
 }
-
 
 
 const inCycle = () => {

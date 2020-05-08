@@ -1,6 +1,6 @@
 {
   "name": "repeatable-promise",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "A family of Promise objects that can be resolved/failed remotely and/or multiple times",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,8 @@
     "call-back",
     "queue",
     "timer",
-    "timeout"
+    "timeout",
+    "remote"
   ],
   "author": "CABrouwers",
   "license": "ISC",
