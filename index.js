@@ -47,7 +47,7 @@ function Queue(val) {
     var theQueue = Promise.resolve(val)
 
     this.enQueue = (f) => {
-        var df = new rp.Defer()
+        var df = new Defer()
         if (f instanceof Promise) {
             theQueue = theQueue.then(() => { return f }).then(df.resolve, df.fail)
         }
