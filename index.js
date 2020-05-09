@@ -63,11 +63,10 @@ function Queue() {
 
 const inCycle = () => {
 
-    var promise = new rp.Defer();
+    var promise = new Defer();
 
     promise.repeat = (pl) => {
         promise.successor = inCycle();
-        //promise.successor.gen = pl
         promise.resolve(pl)
         return promise.successor
     }
@@ -98,7 +97,7 @@ const inCycle = () => {
 
     promise.thenAgain = (f) => {
 
-        let tracker = new rp.Defer();
+        let tracker = new Defer();
         let repo = {}
 
         tracker
@@ -128,7 +127,7 @@ function Cycle() {
 
     var cycler = inCycle();
 
-    var prom = new rp.Defer()
+    var prom = new Defer()
 
     prom.repeat = (pl) => {
         queue = queue.then(() => {
