@@ -63,11 +63,11 @@ function Queue() {
 
 const inCycle = () => {
 
-    var promise = new Defer();
+    var promise = new rp.Defer();
 
     promise.repeat = (pl) => {
         promise.successor = inCycle();
-        promise.successor.gen = pl
+        //promise.successor.gen = pl
         promise.resolve(pl)
         return promise.successor
     }
@@ -85,10 +85,10 @@ const inCycle = () => {
     promise.reset = (pl, f, tracker, repo) => {
         if (repo.kill) { return }
         f(pl)
-        
+
         promise.successor
             .then((pl) => {
-                if (promise.successor.successor != undefined) {
+                if (promise.successor.successor) {
                     promise.successor.reset(pl, f, tracker, repo)
                 }
                 else { tracker.resolve(pl) }
@@ -98,16 +98,19 @@ const inCycle = () => {
 
     promise.thenAgain = (f) => {
 
-        let tracker = new Defer();
+        let tracker = new rp.Defer();
         let repo = {}
 
         tracker
             .then(() => { repo.kill = true })
-            .catch(() => {})
+            .catch(() => { })
 
         promise
             .then((pl) => {
-                promise.reset(pl, f, tracker, repo);
+                if (promise.successor) {
+                    promise.reset(pl, f, tracker, repo)
+                }
+                else { tracker.resolve(pl) }
             })
             .catch((pl) => { tracker.reject(pl) })
         return tracker
@@ -125,7 +128,7 @@ function Cycle() {
 
     var cycler = inCycle();
 
-    var prom = new Defer()
+    var prom = new rp.Defer()
 
     prom.repeat = (pl) => {
         queue = queue.then(() => {
