@@ -1,4 +1,52 @@
 
+class OpenPromise extends Promise {
+
+    constructor(f) {
+        var resolveStatus = false
+        var rejectStatus = false
+        var reject
+        var resolve
+
+        super((res, rej) => {
+
+            resolve = (v) => { resolveStatus = true; res(v) }
+            reject = (v) => { rejectStatus = true; rej(v) }
+
+            if (f) { f(resolve, reject) }
+
+        })
+
+        Object.defineProperty(this, 'resolve', {
+            get: function () { return resolve; }
+        })
+
+        Object.defineProperty(this, 'reject', {
+            get: function () { return reject; }
+        })
+
+
+        Object.defineProperty(this, 'terminate', {
+            get: function () { return resolve; }
+        })
+
+        Object.defineProperty(this, 'fail', {
+            get: function () { return reject; }
+        })
+
+
+        Object.defineProperty(this, 'resolved', {
+            get: function () { return resolveStatus; }
+        })
+
+        Object.defineProperty(this, 'rejected', {
+            get: function () { return rejectStatus; }
+        })
+
+    }
+
+}
+
+
 function Defer() {
     var res, rej;
 
