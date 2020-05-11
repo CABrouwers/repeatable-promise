@@ -1,6 +1,6 @@
 {
-  "name": "repeatable-promise",
-  "version": "1.9.2",
+  "name": "openpromise",
+  "version": "2.1.0",
   "description": "A family of Promise based objects that can be resolved/failed remotely and/or multiple times",
   "main": "index.js",
   "scripts": {

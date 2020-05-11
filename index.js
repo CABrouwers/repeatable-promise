@@ -2,88 +2,36 @@
 class OpenPromise extends Promise {
 
     constructor(f) {
-        var resolveStatus = false
-        var rejectStatus = false
         var reject
         var resolve
 
         super((res, rej) => {
 
-            resolve = (v) => { resolveStatus = true; res(v) }
-            reject = (v) => { rejectStatus = true; rej(v) }
-
+            resolve = (v) => { this.resolved = true; res(v) }
+            reject = (v) => { this.rejected = true; rej(v) }
             if (f) { f(resolve, reject) }
-
         })
 
-        Object.defineProperty(this, 'resolve', {
-            get: function () { return resolve; }
-        })
-
-        Object.defineProperty(this, 'reject', {
-            get: function () { return reject; }
-        })
-
-
-        Object.defineProperty(this, 'terminate', {
-            get: function () { return resolve; }
-        })
-
-        Object.defineProperty(this, 'fail', {
-            get: function () { return reject; }
-        })
-
-
-        Object.defineProperty(this, 'resolved', {
-            get: function () { return resolveStatus; }
-        })
-
-        Object.defineProperty(this, 'rejected', {
-            get: function () { return rejectStatus; }
-        })
-
+        this.resolve = resolve
+        this.reject = reject
+        this.fail = reject
     }
-
 }
 
 
 function Defer() {
-    var res, rej;
-
-    prom = new Promise((resolve, reject) => {
-        res = resolve;
-        rej = reject;
-    });
-
-    prom.resolve = res;
-    prom.terminate = res;
-    prom.reject = rej;
-    prom.fail = rej;
-    return prom
+    return new OpenPromise()
 }
+
 
 
 function Delay(d, val) {
     var df = new Defer()
-    var tm 
-    df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) } )
-    df.reset = (d, val) =>{
-        clearTimeout(tm)
-        if (d || d==0) { tm = setTimeout(() => { df.resolve(val) }, d)}      
-    }
-    df.reset(d,val)
-    return df
-
-}
-
-
-function TimeOut(d, val) {
-    var df = new Defer()
-    var tm
-    df.then(() => { }).catch(() => { }).finally(() => { clearTimeout(tm) })
+    var timer
+    df.finally(() => { clearTimeout(timer) }).catch(() => { })
     df.reset = (d, val) => {
-        clearTimeout(tm)
-        if (d || d == 0) { tm = setTimeout(() => { df.fail(val) }, d) }
+        clearTimeout(timer)
+        if (d || d == 0) { timer = setTimeout(() => { df.resolve(val) }, d) }
     }
     df.reset(d, val)
     return df
@@ -91,59 +39,79 @@ function TimeOut(d, val) {
 }
 
 
-function Queue() {
-    var theQueue = Promise.resolve()
 
-    this.enQueue = (f) => {
+function TimeOut(d, val) {
+    var df = new Defer()
+    var tm
+    df.finally(() => { clearTimeout(tm) }).catch(() => { })
+    df.reset = (d, val) => {
+        clearTimeout(tm)
+        if (d || d == 0) { tm = setTimeout(() => { df.fail(val) }, d) }
+    }
+    df.reset(d, val)
+    return df
+}
+
+class Queue {
+
+    constructor(f) {
+        this._Queue = Promise.resolve()
+    }
+
+    enQueue = (f) => {
         var df = new Defer()
         df.catch(() => { })
         if (f instanceof Promise) {
-            theQueue = theQueue.then(() => { return f }).then(df.resolve, df.fail)
+            this._Queue = this._Queue.then(() => { return f }).then(df.resolve, df.fail)
         }
         else {
-            theQueue = theQueue.then(f).then(df.resolve, df.fail)
+            this._Queue = this._Queue.then(f).then(df.resolve, df.fail)
         }
         return df
     }
 
+
 }
 
 
-const inCycle = () => {
 
-    var promise = new Defer();
+class _Cycler {
 
-    promise.repeat = (pl) => {
-        promise.successor = inCycle();
-        promise.resolve(pl)
-        return promise.successor
+    constructor(f) {
+        this._promise = new Defer()
     }
 
-    promise.terminate = (val) => {
-        promise.resolve(val)
+    repeat(pl) {
+        this._successor = new _Cycler();
+        this._promise.resolve(pl)
+        return this._successor
+    }
+
+    terminate(val) {
+        this._promise.resolve(val)
     }
 
 
-    promise.fail = (val) => {
-        promise.reject(val)
+    fail(val) {
+        this._promise.reject(val)
     }
 
 
-    promise.reset = (pl, f, tracker, repo) => {
+    reset(pl, f, tracker, repo) {
         if (repo.kill) { return }
         f(pl)
-
-        promise.successor
+        this._successor._promise
             .then((pl) => {
-                if (promise.successor.successor) {
-                    promise.successor.reset(pl, f, tracker, repo)
+
+                if (this._successor._successor) {
+                    this._successor.reset(pl, f, tracker, repo)
                 }
                 else { tracker.resolve(pl) }
             })
             .catch((pl) => { tracker.reject(pl) })
     }
 
-    promise.thenAgain = (f) => {
+    thenAgain(f) {
 
         let tracker = new Defer();
         let repo = {}
@@ -151,11 +119,10 @@ const inCycle = () => {
         tracker
             .then(() => { repo.kill = true })
             .catch(() => { })
-
-        promise
+        this._promise
             .then((pl) => {
-                if (promise.successor) {
-                    promise.reset(pl, f, tracker, repo)
+                if (this._successor) {
+                    this.reset(pl, f, tracker, repo)
                 }
                 else { tracker.resolve(pl) }
             })
@@ -163,78 +130,129 @@ const inCycle = () => {
         return tracker
     }
 
-    promise.thenOnce = (f) => { return promise.then(f) }
-
-    return promise;
-}
-
-
-function Cycle() {
-
-    var queue = Promise.resolve()
-
-    var cycler = inCycle();
-
-    var prom = new Defer()
-
-    prom.repeat = (pl) => {
-        queue = queue.then(() => {
-            cycler = cycler.repeat(pl)
-        })
-        return queue
-    }
-
-    prom.thenAgain = (f) => {
-        return cycler.thenAgain(f)
-    }
-
-    prom.thenOnce = (f) => {
-        return cycler.thenOnce(f)
-    }
-
-
-    prom.then(
-        (val) => {
-            queue = queue.then(() => {
-                cycler.terminate(val)
-            })
-        },
-        (v) => {
-            queue = queue.then(() => {
-                cycler.fail(v)
-            })
-        }
-    )
-
-    prom.terminate = (pl) => {
-        queue = queue.then(() => {
-            cycler.terminate(pl)
-            prom.resolve(pl)
-        })
-        return queue
-    }
-
-    prom.fail = (pl) => {
-        queue = queue.then(() => {
-            cycler.fail(pl)
-            prom.fail(pl)
-        })
-        return queue
-    }
-
-
-    return prom
+    thenOnce(f) { return this._promise.then(f) }
 
 }
 
 
+
+
+class Cycle {
+    constructor(f) {
+
+        this._prom = new Defer()
+        this._queue = new Queue()
+        this._cycler = new _Cycler()
+
+
+    }
+
+    repeat(pl) {
+        var me = this
+        return this._queue.enQueue(() => {
+            me._cycler = me._cycler.repeat(pl)
+        })
+    }
+
+    thenAgain(f) {
+        var me = this
+        return this._cycler.thenAgain(f)
+    }
+
+
+    thenOnce(f) {
+        var me = this
+        return this._cycler.thenOnce(f)
+    }
+
+
+    terminate(pl) {
+        var me = this
+        return this._queue.enQueue(() => {
+            me._cycler.terminate(pl)
+            me._prom.resolve(pl)
+        })
+
+    }
+
+    fail(pl) {
+        return this._queue.enQueue(() => {
+            me._cycler.fail(pl)
+            me._prom.fail(pl)
+        })
+
+    }
+
+    then(f) {
+        return this._prom.then(f)
+    }
+
+
+    catch(f) {
+        return this._prom.catch(f)
+    }
+
+
+    finally(f) {
+        return this._prom.finally(f)
+    }
+
+    get resolved() { return this._prom.resolved }
+    get rejected() { return this._prom.rejected }
+    get failed() { return this._prom.failed }
+
+}
+
+
+
+function Repeater(d) {
+    var cycle = new Cycle()
+    console.debug(cycle)
+    var timer = setInterval(() => { cycle.repeat() }, d)
+    cycle.then(() => { clearInterval(timer) })
+    return cycle
+}
+
+
+
+
+class Flipflop {
+    constructor(f) {
+        this._defer = new Defer()
+    }
+
+    on() {
+        this._defer.resolve()
+    }
+
+    off() {
+        if (this._defer.resolved) { this._defer = new Defer() }
+    }
+
+    flip() {
+        if (this._defer.resolved) { this._defer = new Defer() }
+        else { this._defer.resolve() }
+    }
+
+    then(f) { return this._defer.then(f) }
+    catch(f) { return this._defer.catch(f) }
+    finally(f) { return this._defer.finally(f) }
+
+    get resolved() { return this._defer.resolved }
+    get failed() { return this._defer.failed }
+
+}
 
 
 module.exports = {
+    OpenPromise,
     Defer,
     Cycle,
     Delay,
     TimeOut,
-    Queue
+    Queue,
+    Repeater,
+    Flipflop
 }
+
 
