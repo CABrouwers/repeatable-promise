@@ -222,11 +222,17 @@ class Flipflop {
     }
 
     on() {
+        if (this._defer.rejected) { this._defer = new Defer() }
         this._defer.resolve()
     }
 
     off() {
-        if (this._defer.resolved) { this._defer = new Defer() }
+        if (this._defer.resolved || this._defer.rejected) { this._defer = new Defer() }
+    }
+
+
+    fail() {
+        this._defer.fail()
     }
 
     flip() {
@@ -242,6 +248,7 @@ class Flipflop {
     get failed() { return this._defer.failed }
 
 }
+
 
 
 module.exports = {
