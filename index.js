@@ -250,6 +250,32 @@ class Flipflop {
 }
 
 
+function untilResolved(f, n, wait) {
+    let ret = new Defer()
+    f()
+        .then((v) => { ret.resolve(v) })
+        .catch((v) => {
+            if (n && n <= 1) { ret.fail(v) }
+            else {
+                if (wait) {
+                    let dl = new Delay(wait)
+                    dl.then(() => {
+                        whilst(f, n ? n - 1 : undefined, wait)
+                            .then((v) => { ret.resolve(v) })
+                            .catch((v) => { ret.fail(v) })
+                    })
+                }
+                else {
+                    whilst(f, n ? n - 1 : undefined)
+                        .then((v) => { ret.resolve(v) })
+                        .catch((v) => { ret.fail(v) })
+                }
+            }
+        })
+    return ret
+}
+
+
 
 module.exports = {
     OpenPromise,
@@ -259,7 +285,8 @@ module.exports = {
     TimeOut,
     Queue,
     Repeater,
-    Flipflop
+    Flipflop,
+    untilResolved
 }
 
 
