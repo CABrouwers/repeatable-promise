@@ -260,13 +260,13 @@ function untilResolved(f, n, wait) {
                 if (wait) {
                     let dl = new Delay(wait)
                     dl.then(() => {
-                        whilst(f, n ? n - 1 : undefined, wait)
+                        untilResolved(f, n ? n - 1 : undefined, wait)
                             .then((v) => { ret.resolve(v) })
                             .catch((v) => { ret.fail(v) })
                     })
                 }
                 else {
-                    whilst(f, n ? n - 1 : undefined)
+                    untilResolved(f, n ? n - 1 : undefined)
                         .then((v) => { ret.resolve(v) })
                         .catch((v) => { ret.fail(v) })
                 }
