@@ -1,4 +1,15 @@
+
+# THIS MODULE IS SUPERSEEDED BY THE MODULE OPENPROMISE
+https://www.npmjs.com/package/openpromise
+https://github.com/CABrouwers/openpromise
+
+**openpromise if backcompatible with repeatable-promise**
+
+
 # repeatable-promise
+
+
+
 
 This module includes Promise based objects that provide ways to simplify asynchronous communication between different parts of a program and event triggering/handling.  At the core of these objects is  **Defer**,  a promise that can be resolved or failed from outside its body and can be used as a "remote switch".  **Cycle** is built on **Defer**, it is a  "retriggerable **Promise**".  These objects are very simple to use if one is a little familiar with **Promises** and leverage the clean call-back syntax of **Promises**.  The objects can easily be chained with regular **Promise**s, they are **Promise**s in their own right and most of their methods return **Promise**s. 
 
